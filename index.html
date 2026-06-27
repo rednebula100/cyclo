@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#4CAF82" />
+  <link rel="manifest" href="manifest.json" />
+  <link rel="icon" href="icon-192.png" />
+  <link rel="stylesheet" href="style.css" />
+  <title>Cyclo</title>
+</head>
+<body>
+  <header>
+    <h1>Cyclo</h1>
+  </header>
+
+  <main id="view-main">
+    <ul id="item-list"></ul>
+    <p id="empty-msg" hidden>아직 등록된 물건이 없어요. + 버튼을 눌러 추가하세요.</p>
+  </main>
+
+  <!-- 프리셋/커스텀 추가 패널 -->
+  <div id="add-panel" hidden>
+    <div id="add-panel-inner">
+      <button id="close-panel">✕</button>
+      <h2>물건 추가</h2>
+
+      <section>
+        <h3>프리셋</h3>
+        <div id="preset-grid"></div>
+      </section>
+
+      <section>
+        <h3>직접 추가</h3>
+        <form id="custom-form">
+          <input id="custom-name" type="text" placeholder="이름 (예: 칫솔)" required />
+          <input id="custom-days" type="number" placeholder="주기 (일 단위)" min="1" required />
+          <button type="submit">추가</button>
+        </form>
+      </section>
+    </div>
+  </div>
+
+  <!-- 교체 확인 모달 -->
+  <div id="reset-modal" hidden>
+    <div id="reset-modal-inner">
+      <p id="reset-modal-msg"></p>
+      <button id="confirm-reset">교체함 ✓</button>
+      <button id="cancel-reset">취소</button>
+    </div>
+  </div>
+
+  <button id="fab">+</button>
+
+  <script src="app.js"></script>
+</body>
+</html>
