@@ -142,6 +142,15 @@ function closeResetModal() {
 
 // ─── 이벤트 ──────────────────────────────────────────────────────────────────
 
+// pull-to-refresh 방지 (overscroll-behavior 미지원 환경 대비)
+let _touchStartY = 0;
+document.addEventListener('touchstart', e => { _touchStartY = e.touches[0].clientY; }, { passive: true });
+document.addEventListener('touchmove', e => {
+  if (document.scrollingElement.scrollTop > 0) return;
+  if (e.touches[0].clientY - _touchStartY <= 0) return;
+  if (!e.target.closest('#add-panel-inner')) e.preventDefault();
+}, { passive: false });
+
 document.getElementById('fab').addEventListener('click', openPanel);
 document.getElementById('close-panel').addEventListener('click', closePanel);
 
