@@ -1,4 +1,4 @@
-const CACHE_NAME = 'cyclo-v1';
+const CACHE_NAME = 'cyclo-v2';
 const ASSETS = ['./', './index.html', './app.js', './style.css', './manifest.json', './icon-192.png', './icon-512.png'];
 
 self.addEventListener('install', e => {
@@ -16,9 +16,26 @@ self.addEventListener('activate', e => {
 });
 
 self.addEventListener('fetch', e => {
-  e.respondWith(
-    caches.match(e.request).then(cached => cached || fetch(e.request))
-  );
+  const { pathname } = new URL(e.request.url);
+  const isDoc = /\.(html|css|js)$/.test(pathname) || pathname.endsWith('/');
+
+  if (isDoc) {
+    // 네트워크 우선: 새 배포 즉시 반영, 오프라인 시 캐시 폴백
+    e.respondWith(
+      fetch(e.request)
+        .then(res => {
+          const clone = res.clone();
+          caches.open(CACHE_NAME).then(c => c.put(e.request, clone));
+          return res;
+        })
+        .catch(() => caches.match(e.request))
+    );
+  } else {
+    // 이미지 등 정적 에셋은 캐시 우선
+    e.respondWith(
+      caches.match(e.request).then(cached => cached || fetch(e.request))
+    );
+  }
 });
 
 // 알림 클릭 시 앱 열기 + 교체 처리
