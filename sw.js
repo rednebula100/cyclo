@@ -1,4 +1,4 @@
-const CACHE_NAME = 'cyclo-v4';
+const CACHE_NAME = 'cyclo-v5';
 const ASSETS = ['./', './index.html', './app.js', './style.css', './manifest.json', './icon-192.png', './icon-512.png'];
 
 self.addEventListener('install', e => {
@@ -35,6 +35,22 @@ self.addEventListener('fetch', e => {
     e.respondWith(
       caches.match(e.request).then(cached => cached || fetch(e.request))
     );
+  }
+});
+
+// 페이지 → SW 메시지 처리
+self.addEventListener('message', e => {
+  if (e.data?.type === 'GET_VERSION') {
+    e.source?.postMessage({ type: 'VERSION', version: CACHE_NAME });
+  }
+  if (e.data?.type === 'SCHEDULE_TEST') {
+    const delay = e.data.delay ?? 10000;
+    setTimeout(() => {
+      self.registration.showNotification('Cyclo 테스트 알림 🔔', {
+        body: 'SW가 살아있어 알림이 왔어요! 앱 종료 후 수신 성공.',
+        tag: 'test-notif',
+      });
+    }, delay);
   }
 });
 

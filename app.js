@@ -204,6 +204,7 @@ document.getElementById('confirm-reset').addEventListener('click', () => {
 });
 
 document.getElementById('cancel-reset').addEventListener('click', closeResetModal);
+document.getElementById('btn-test-notif').addEventListener('click', scheduleTestNotification);
 
 // ─── Service Worker + 알림 ───────────────────────────────────────────────────
 
@@ -217,10 +218,41 @@ async function registerSW() {
         scheduleNotifications();
         render();
       }
+      if (e.data?.type === 'VERSION') {
+        const el = document.getElementById('app-version');
+        if (el) el.textContent = e.data.version.replace('cyclo-', '');
+      }
     });
+    // SW에서 현재 캐시 버전 받아오기
+    navigator.serviceWorker.ready.then(r => r.active?.postMessage({ type: 'GET_VERSION' }));
   } catch (err) {
     console.error('SW 등록 실패:', err);
   }
+}
+
+async function scheduleTestNotification() {
+  if (!('Notification' in window)) { alert('이 브라우저는 알림을 지원하지 않습니다.'); return; }
+  const perm = await Notification.requestPermission();
+  if (perm !== 'granted') { alert('알림 권한이 필요합니다.'); return; }
+
+  const reg = await navigator.serviceWorker.ready;
+
+  // showTrigger API 지원 시 (Chrome 일부 버전)
+  if ('showTrigger' in Notification.prototype) {
+    try {
+      await reg.showNotification('Cyclo 테스트 알림 🔔', {
+        body: '앱을 닫아도 이 알림이 오면 성공!',
+        tag: 'test-notif',
+        showTrigger: new TimestampTrigger(Date.now() + 10000),
+      });
+      alert('10초 후 알림 예약 완료 ✓\n지금 앱을 완전히 종료하세요.');
+      return;
+    } catch (_) { /* fallback */ }
+  }
+
+  // SW setTimeout fallback
+  reg.active?.postMessage({ type: 'SCHEDULE_TEST', delay: 10000 });
+  alert('10초 후 알림 예약 완료 ✓\n지금 앱을 완전히 종료하세요.\n\n※ SW 방식: 앱 종료 후 OS가 SW를 죽이면 알림이 안 올 수 있습니다.');
 }
 
 async function requestNotificationPermission() {
