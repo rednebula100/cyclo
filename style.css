@@ -6,7 +6,10 @@
   -webkit-user-drag: none;
   -webkit-user-select: none;
   user-select: none;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
 }
+*::-webkit-scrollbar { display: none; }
 
 input, textarea { -webkit-user-select: text; user-select: text; }
 
