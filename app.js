@@ -118,10 +118,12 @@ function renderPresets() {
 function openPanel() {
   renderPresets();
   addPanel.hidden = false;
+  document.body.style.overflow = 'hidden';
 }
 
 function closePanel() {
   addPanel.hidden = true;
+  document.body.style.overflow = '';
   document.getElementById('custom-form').reset();
 }
 
@@ -133,23 +135,37 @@ function openResetModal(id) {
   pendingResetId = id;
   resetMsg.textContent = `"${item.name}"을(를) 오늘 교체했나요?`;
   resetModal.hidden = false;
+  document.body.style.overflow = 'hidden';
 }
 
 function closeResetModal() {
   resetModal.hidden = true;
+  document.body.style.overflow = '';
   pendingResetId = null;
 }
 
 // ─── 이벤트 ──────────────────────────────────────────────────────────────────
 
-// pull-to-refresh 방지 (overscroll-behavior 미지원 환경 대비)
+// pull-to-refresh 방지: 모든 스크롤 컨테이너에서 위로 당기는 제스처 차단
 let _touchStartY = 0;
 document.addEventListener('touchstart', e => { _touchStartY = e.touches[0].clientY; }, { passive: true });
 document.addEventListener('touchmove', e => {
-  if (document.scrollingElement.scrollTop > 0) return;
-  if (e.touches[0].clientY - _touchStartY <= 0) return;
-  if (!e.target.closest('#add-panel-inner')) e.preventDefault();
-}, { passive: false });
+  if (e.touches[0].clientY - _touchStartY <= 0) return; // 위로 스크롤은 허용
+
+  // 가장 가까운 스크롤 가능한 조상 탐색
+  let el = e.target;
+  while (el && el !== document.documentElement) {
+    const ov = window.getComputedStyle(el).overflowY;
+    if ((ov === 'auto' || ov === 'scroll') && el.scrollHeight > el.clientHeight) {
+      if (el.scrollTop <= 0) e.preventDefault(); // 내부 컨테이너 최상단 → 차단
+      return;
+    }
+    el = el.parentElement;
+  }
+
+  // 스크롤 컨테이너 없음 → 페이지 최상단이면 차단
+  if ((document.scrollingElement?.scrollTop ?? 0) <= 0) e.preventDefault();
+}, { passive: false, capture: true });
 
 document.getElementById('fab').addEventListener('click', openPanel);
 document.getElementById('close-panel').addEventListener('click', closePanel);
